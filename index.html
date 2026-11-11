@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Калининград · отпуск 19–29 ноября</title>
+  <meta name="description" content="План отпуска в Калининграде: дни, маршруты, рестораны, погода.">
+  <meta name="theme-color" content="#12344a">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="hero">
+    <svg class="hero-art" viewBox="0 0 1200 420" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#12344a"/>
+          <stop offset=".45" stop-color="#3f6f86"/>
+          <stop offset=".72" stop-color="#f3a45c"/>
+          <stop offset="1" stop-color="#ffd58a"/>
+        </linearGradient>
+        <radialGradient id="glow" cx=".5" cy=".5" r=".5">
+          <stop offset="0" stop-color="#fff3c4" stop-opacity=".95"/>
+          <stop offset=".35" stop-color="#ffd27a" stop-opacity=".55"/>
+          <stop offset="1" stop-color="#ffd27a" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="1200" height="420" fill="url(#sky)"/>
+      <circle cx="820" cy="292" r="170" fill="url(#glow)"/>
+      <circle class="sun" cx="820" cy="292" r="46" fill="#fff1c1"/>
+      <g class="gulls" fill="none" stroke="#12344a" stroke-width="3" stroke-linecap="round" opacity=".7">
+        <path d="M300 120 q12 -12 24 0 q12 -12 24 0"/>
+        <path d="M380 160 q9 -9 18 0 q9 -9 18 0"/>
+        <path d="M250 180 q7 -7 14 0 q7 -7 14 0"/>
+      </g>
+      <!-- маяк -->
+      <g transform="translate(1010 196)">
+        <path d="M-9 0 h18 l8 120 h-34z" fill="#fdf6e9"/>
+        <path d="M-10.5 24 h21 l1.6 24 h-24.2z M-13.6 72 h27.2 l1.6 24 h-30.4z" fill="#e8674a"/>
+        <rect x="-12" y="-18" width="24" height="18" rx="2" fill="#12344a"/>
+        <rect x="-7" y="-14" width="14" height="10" fill="#ffe9a8"/>
+        <path d="M-14 -18 h28 l-14 -14z" fill="#e8674a"/>
+      </g>
+      <!-- дюны и море -->
+      <path d="M0 330 q160 -60 330 -18 t330 -10 t540 -8 v130 H0z" fill="#e9c98f"/>
+      <path d="M700 322 q160 -44 500 -10 v110 H700z" fill="#d9b272"/>
+      <g class="waves">
+        <path class="w w1" d="M-200 356 q50 -16 100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 V420 H-200z" fill="#2c7f8d"/>
+        <path class="w w2" d="M-200 376 q50 -14 100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 V420 H-200z" fill="#1f6170"/>
+        <path class="w w3" d="M-200 396 q50 -12 100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 V420 H-200z" fill="#17475a"/>
+      </g>
+    </svg>
+    <div class="hero-text">
+      <p class="hero-kicker">отпуск · 19–29 ноября 2026</p>
+      <h1>Калининград</h1>
+      <p class="hero-sub">море, янтарь и никакой работы</p>
+      <div class="hero-badge" id="countdown"></div>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs" aria-label="Разделы">
+    <button data-view="days" class="on"><span>🗓️</span>Дни</button>
+    <button data-view="food"><span>🍽️</span>Рестораны</button>
+    <button data-view="prep"><span>🧳</span>Подготовка</button>
+  </nav>
+
+  <main id="app"></main>
+
+  <footer class="foot">
+    <p>Отметки хранятся в этом браузере. <button class="link" data-act="export">Скопировать данные</button> · <button class="link" data-act="import">Вставить данные</button></p>
+    <p class="muted">Погода — Open-Meteo · карта — OpenStreetMap · маршруты — Яндекс Карты и OSRM</p>
+  </footer>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
