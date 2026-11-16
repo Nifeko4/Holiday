@@ -159,12 +159,12 @@
   // ---------- маршруты ----------
   const yaSearch = (q) => `https://yandex.ru/maps/?text=${encodeURIComponent(q)}`;
   const rtext = (pts) => pts.map((p) => p.ll.join(',')).join('~');
-  const yaRoute = (pts, mode) => `https://yandex.ru/maps/?rtext=${rtext(pts)}&rtt=${mode}`;
-  const yaWidget = (pts, mode) => `https://yandex.ru/map-widget/v1/?rtext=${rtext(pts)}&rtt=${mode}`;
-  const yaFromHere = (p) => `https://yandex.ru/maps/?rtext=~${p.ll.join(',')}&rtt=mt`;
+  const yaRoute = (pts, mode) => `https://yandex.ru/maps/?mode=routes&rtext=${rtext(pts)}&rtt=${mode}`;
+  const yaWidget = (pts, mode) => `https://yandex.ru/map-widget/v1/?mode=routes&rtext=${rtext(pts)}&rtt=${mode}`;
+  const yaFromHere = (p) => `https://yandex.ru/maps/?mode=routes&rtext=~${p.ll.join(',')}&rtt=mt`;
   const homeText = HOME.ll.join(',');
-  const yaFromHome = (p) => `https://yandex.ru/maps/?rtext=${homeText}~${p.ll.join(',')}&rtt=mt`;
-  const yaToHome = (p) => `https://yandex.ru/maps/?rtext=${p.ll.join(',')}~${homeText}&rtt=mt`;
+  const yaFromHome = (p) => `https://yandex.ru/maps/?mode=routes&rtext=${homeText}~${p.ll.join(',')}&rtt=mt`;
+  const yaToHome = (p) => `https://yandex.ru/maps/?mode=routes&rtext=${p.ll.join(',')}~${homeText}&rtt=mt`;
   const segPoints = (c, seg) => seg.pts.map((id) => c.items.find((it) => it.id === id)).filter((p) => p && p.ll);
 
   function mapCard(i) {
@@ -184,15 +184,13 @@
         ? `<iframe src="${yaWidget(pts, seg.mode)}" loading="lazy" allowfullscreen title="Маршрут в Яндекс Картах"></iframe>`
         : '<div id="map"></div>'}</div>
       <p class="route-info" id="route-info">${esc(seg.title)}</p>
-      <div class="btns">
-        <a class="btn ya" href="${yaRoute(pts, seg.mode)}" target="_blank" rel="noopener">Открыть маршрут в Яндекс Картах</a>
-      </div>
-      <div class="btns" style="margin-top:8px">
-        ${first ? `<a class="btn" href="${yaFromHome(first)}" target="_blank" rel="noopener">🚋 От дома до старта</a>
-        <a class="btn" href="${yaToHome(last)}" target="_blank" rel="noopener">🏠 Домой с финиша</a>` : ''}
-        <a class="btn" href="${yaFromHere(pts[0])}" target="_blank" rel="noopener">📍 Отсюда до старта</a>
-      </div>
-      ${first ? `<p class="muted" style="font-size:13px;margin:10px 0 0">Дом — ${esc(HOME.label)}. Старт дня: ${esc(first.name)}, финиш: ${esc(last.name)}. Яндекс сам подберёт трамвай или автобус.</p>` : ''}
+      ${first ? `<ol class="legs">
+        <li><a class="btn" href="${yaFromHome(first)}" target="_blank" rel="noopener">🚋 Дом → ${esc(first.name)}</a><span>на транспорте</span></li>
+        <li><a class="btn ya" href="${yaRoute(pts, seg.mode)}" target="_blank" rel="noopener">${esc(seg.title)}</a><span>${MODES[seg.mode]}, ${pts.length} ${plural(pts.length, 'точка', 'точки', 'точек')}</span></li>
+        <li><a class="btn" href="${yaToHome(last)}" target="_blank" rel="noopener">🏠 ${esc(last.name)} → дом</a><span>на транспорте</span></li>
+      </ol>
+      <p class="muted" style="font-size:13px;margin:10px 0 0">Кнопки открывают Яндекс Карты. Дом — ${esc(HOME.label)}. Не в городе по плану? <a href="${yaFromHere(pts[0])}" target="_blank" rel="noopener">Маршрут до старта от того места, где ты сейчас</a>.</p>`
+      : `<div class="btns"><a class="btn ya" href="${yaRoute(pts, seg.mode)}" target="_blank" rel="noopener">Открыть маршрут в Яндекс Картах</a></div>`}
       ${c.approx ? '<p class="muted" style="font-size:13px;margin:10px 0 0">Точки за городом расставлены примерно — точный адрес открывается по кнопке «Яндекс» у каждого места.</p>' : ''}
     </section>`;
   }
@@ -241,13 +239,19 @@
         .bindPopup(`<b>${esc(it.name)}</b>${it.opt ? '<br>если останется время' : ''}<br><a href="${yaSearch(it.q || it.name)}" target="_blank" rel="noopener">Открыть в Яндекс Картах</a>`);
     });
 
-    if (c.place === 'kgd' && !c.items.some((it) => it.id === 'home')) {
+    const withHome = c.place === 'kgd' && !c.items.some((it) => it.id === 'home' && seg.pts.includes('home'));
+    if (withHome) {
       L.marker(HOME.ll, { icon: L.divIcon({ className: '', iconSize: [28, 28], iconAnchor: [14, 14], html: '<div class="home-mk">🏠</div>' }) }).addTo(map)
         .bindPopup(`<b>Дом</b><br>${esc(HOME.label)}`);
     }
 
     const straight = pts.map((p) => p.ll);
-    const bounds = L.latLngBounds(straight);
+    const bounds = L.latLngBounds(withHome ? [...straight, HOME.ll] : straight);
+    if (withHome) {
+      const style = { color: '#12344a', weight: 3, dashArray: '2 8', opacity: 0.6 };
+      L.polyline([HOME.ll, straight[0]], style).addTo(map);
+      L.polyline([straight[straight.length - 1], HOME.ll], style).addTo(map);
+    }
     map.fitBounds(bounds.pad(0.25), { maxZoom: 16 });
     const fallback = L.polyline(straight, { color: '#e8674a', weight: 4, dashArray: '6 8', opacity: 0.8 }).addTo(map);
     const info = $('#route-info');

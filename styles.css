@@ -212,3 +212,8 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--amber); out
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 .leaflet-container { font-family: var(--body); }
 .home-mk { width: 28px; height: 28px; border-radius: 50%; background: #fff; border: 2px solid var(--sea-800); display: grid; place-items: center; font-size: 15px; box-shadow: 0 3px 8px rgba(0, 0, 0, .35); }
+.legs { list-style: none; counter-reset: leg; margin: 0; padding: 0; display: grid; gap: 8px; }
+.legs li { counter-increment: leg; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.legs li::before { content: counter(leg); flex: 0 0 auto; width: 24px; height: 24px; border-radius: 50%; background: var(--sand); font-weight: 800; font-size: 12px; display: grid; place-items: center; }
+.legs span { font-size: 12px; color: var(--muted); font-weight: 600; }
+.legs .btn { text-align: left; }
