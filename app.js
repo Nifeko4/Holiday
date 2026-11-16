@@ -162,7 +162,7 @@
   const yaRoute = (pts, mode) => `https://yandex.ru/maps/?rtext=${rtext(pts)}&rtt=${mode}`;
   const yaWidget = (pts, mode) => `https://yandex.ru/map-widget/v1/?rtext=${rtext(pts)}&rtt=${mode}`;
   const yaFromHere = (p) => `https://yandex.ru/maps/?rtext=~${p.ll.join(',')}&rtt=mt`;
-  const homeText = encodeURIComponent(HOME.address);
+  const homeText = HOME.ll.join(',');
   const yaFromHome = (p) => `https://yandex.ru/maps/?rtext=${homeText}~${p.ll.join(',')}&rtt=mt`;
   const yaToHome = (p) => `https://yandex.ru/maps/?rtext=${p.ll.join(',')}~${homeText}&rtt=mt`;
   const segPoints = (c, seg) => seg.pts.map((id) => c.items.find((it) => it.id === id)).filter((p) => p && p.ll);
@@ -172,7 +172,7 @@
     if (!c.segments.length) return '';
     const seg = c.segments[Math.min(ui.seg, c.segments.length - 1)];
     const pts = segPoints(c, seg);
-    const stops = c.items.filter((it) => it.ll && !it.opt);
+    const stops = c.items.filter((it) => it.ll && !it.opt && !it.transfer);
     const first = stops[0], last = stops[stops.length - 1];
     return `<section class="card"><h3>🗺️ Маршрут дня <small>${MODES[seg.mode]}</small></h3>
       ${c.segments.length > 1 ? `<div class="seg">${c.segments.map((s, k) => `<button class="${k === ui.seg ? 'on' : ''}" data-act="seg" data-id="${k}">${esc(s.title)}</button>`).join('')}</div>` : ''}
@@ -188,11 +188,11 @@
         <a class="btn ya" href="${yaRoute(pts, seg.mode)}" target="_blank" rel="noopener">Открыть маршрут в Яндекс Картах</a>
       </div>
       <div class="btns" style="margin-top:8px">
-        <a class="btn" href="${yaFromHome(first)}" target="_blank" rel="noopener">🚋 От дома до старта</a>
-        <a class="btn" href="${yaToHome(last)}" target="_blank" rel="noopener">🏠 Домой с финиша</a>
+        ${first ? `<a class="btn" href="${yaFromHome(first)}" target="_blank" rel="noopener">🚋 От дома до старта</a>
+        <a class="btn" href="${yaToHome(last)}" target="_blank" rel="noopener">🏠 Домой с финиша</a>` : ''}
         <a class="btn" href="${yaFromHere(pts[0])}" target="_blank" rel="noopener">📍 Отсюда до старта</a>
       </div>
-      <p class="muted" style="font-size:13px;margin:10px 0 0">Дом — ${esc(HOME.label)}. Старт дня: ${esc(first.name)}, финиш: ${esc(last.name)}. Яндекс сам подберёт трамвай или автобус.</p>
+      ${first ? `<p class="muted" style="font-size:13px;margin:10px 0 0">Дом — ${esc(HOME.label)}. Старт дня: ${esc(first.name)}, финиш: ${esc(last.name)}. Яндекс сам подберёт трамвай или автобус.</p>` : ''}
       ${c.approx ? '<p class="muted" style="font-size:13px;margin:10px 0 0">Точки за городом расставлены примерно — точный адрес открывается по кнопке «Яндекс» у каждого места.</p>' : ''}
     </section>`;
   }
@@ -241,9 +241,9 @@
         .bindPopup(`<b>${esc(it.name)}</b>${it.opt ? '<br>если останется время' : ''}<br><a href="${yaSearch(it.q || it.name)}" target="_blank" rel="noopener">Открыть в Яндекс Картах</a>`);
     });
 
-    if (c.place === 'kgd') {
+    if (c.place === 'kgd' && !c.items.some((it) => it.id === 'home')) {
       L.marker(HOME.ll, { icon: L.divIcon({ className: '', iconSize: [28, 28], iconAnchor: [14, 14], html: '<div class="home-mk">🏠</div>' }) }).addTo(map)
-        .bindPopup(`<b>Дом</b><br>${esc(HOME.label)}<br><span style="opacity:.7">значок стоит примерно</span>`);
+        .bindPopup(`<b>Дом</b><br>${esc(HOME.label)}`);
     }
 
     const straight = pts.map((p) => p.ll);
